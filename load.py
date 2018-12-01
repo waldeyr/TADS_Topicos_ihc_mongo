@@ -5,7 +5,7 @@
 
 from pymongo import MongoClient
 import pandas as pd
-
+import bson
 
 class Aula_IHC_Topicos:
     CONN = MongoClient(port=27017)
@@ -32,17 +32,15 @@ class Aula_IHC_Topicos:
 aula = Aula_IHC_Topicos()
 
 for index, beerLine in aula.loadBeers():
-    json = "{"
+    data = {}
     beerName = str(beerLine.values[2])
-    json += "\"beer\":\""+beerName+"\""
+    data.update({'beer': beerName})
     for index, breweryLine in aula.loadBreweries():
         if breweryLine.values[0] == beerLine.values[1]:
             breweryName = str(breweryLine.values[1])
             breweryCountry = str(breweryLine.values[7])
             breweryCity = str(breweryLine.values[4])
-            json += ",\n\"brewery\":\"" + breweryName + "\""
-            json += ",\n\"country\":\"" + breweryCountry + "\""
-            json += ",\n\"city\":\"" + breweryCity + "\""
-    json += "}"
-    print(json)
-    print()
+            data.update({'brewery': breweryName})
+            data.update({'country': breweryCountry})
+            data.update({'city': breweryCity})
+    aula.insertDataIntoMongoDB(data)
