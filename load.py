@@ -24,13 +24,6 @@ class Aula_IHC_Topicos:
         return pd.read_csv('styles.csv', sep=',').iterrows()
 
     def insertDataIntoMongoDB(self, data):
-        '''
-        Example of data:
-        data = {
-            'name': 'AAAAA',
-            'brewery': 'AAAAA'
-        }
-        '''
         result = self.DB.reviews.insert_one(data)
         print('Created: {0} '.format(result.inserted_id))
         return
@@ -38,5 +31,18 @@ class Aula_IHC_Topicos:
 
 aula = Aula_IHC_Topicos()
 
-for index, linha in aula.loadStyles():
-    print(linha)
+for index, beerLine in aula.loadBeers():
+    json = "{"
+    beerName = str(beerLine.values[2])
+    json += "\"beer\":\""+beerName+"\""
+    for index, breweryLine in aula.loadBreweries():
+        if breweryLine.values[0] == beerLine.values[1]:
+            breweryName = str(breweryLine.values[1])
+            breweryCountry = str(breweryLine.values[7])
+            breweryCity = str(breweryLine.values[4])
+            json += ",\n\"brewery\":\"" + breweryName + "\""
+            json += ",\n\"country\":\"" + breweryCountry + "\""
+            json += ",\n\"city\":\"" + breweryCity + "\""
+    json += "}"
+    print(json)
+    print()
