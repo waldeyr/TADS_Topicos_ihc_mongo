@@ -7,9 +7,12 @@ from pymongo import MongoClient
 import pandas as pd
 import bson
 
+
 class Aula_IHC_Topicos:
-    CONN = MongoClient(port=27017)
-    DB = CONN.mycollection
+    # Database connection
+    CONN = MongoClient('mongodb://localhost:27017')
+    # Database name
+    DB = CONN.beerdb
 
     def loadBeers(self):
         return pd.read_csv('beers.csv', sep=',').iterrows()
@@ -24,7 +27,8 @@ class Aula_IHC_Topicos:
         return pd.read_csv('styles.csv', sep=',').iterrows()
 
     def insertDataIntoMongoDB(self, data):
-        result = self.DB.reviews.insert_one(data)
+        # Insert into collection beerinfo
+        result = self.DB.beerinfo.insert_one(data)
         print('Created: {0} '.format(result.inserted_id))
         return
 
@@ -43,4 +47,12 @@ for index, beerLine in aula.loadBeers():
             data.update({'brewery': breweryName})
             data.update({'country': breweryCountry})
             data.update({'city': breweryCity})
+    for index, styleLine in aula.loadStyles():
+        if styleLine.values[0] == beerLine.values[4]:
+            styleName = str(styleLine.values[2])
+            data.update({'style': styleName})
+    for index, categoryLine in aula.loadCategories():
+        if categoryLine.values[0] == beerLine.values[3]:
+            categoryName = str(categoryLine.values[1])
+            data.update({'category': categoryName})
     aula.insertDataIntoMongoDB(data)
